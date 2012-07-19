@@ -20,9 +20,14 @@
 
 package de.ralli.sftpserver.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.NoSuchElementException;
@@ -71,6 +76,42 @@ public final class PublicKeyReaderUtil {
 	 * could not be instantiated.
 	 */
 	private PublicKeyReaderUtil() {
+	}
+
+	public static String encodeToOpenSSH(RSAPublicKey key) throws Exception {
+		StringWriter stringWriter = new StringWriter();
+		stringWriter.write(SSH2_RSA_KEY);
+		stringWriter.append(' ');
+		stringWriter.write(Base64.encodeBase64String(encodePublicKey(key)));
+		return stringWriter.toString();
+	}
+	
+	private static byte[] encodePublicKey(RSAPublicKey key) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		/* encode the "ssh-rsa" string */
+		byte[] sshrsa = new byte[] { 0, 0, 0, 7, 's', 's', 'h', '-', 'r', 's',
+				'a' };
+		out.write(sshrsa);
+		/* Encode the public exponent */
+		BigInteger e = key.getPublicExponent();
+		byte[] data = e.toByteArray();
+		encodeUInt32(data.length, out);
+		out.write(data);
+		/* Encode the modulus */
+		BigInteger m = key.getModulus();
+		data = m.toByteArray();
+		encodeUInt32(data.length, out);
+		out.write(data);
+		return out.toByteArray();
+	}
+
+	private static void encodeUInt32(int value, OutputStream out) throws IOException {
+		byte[] tmp = new byte[4];
+		tmp[0] = (byte) ((value >>> 24) & 0xff);
+		tmp[1] = (byte) ((value >>> 16) & 0xff);
+		tmp[2] = (byte) ((value >>> 8) & 0xff);
+		tmp[3] = (byte) (value & 0xff);
+		out.write(tmp);
 	}
 
 	/**
@@ -381,11 +422,8 @@ public final class PublicKeyReaderUtil {
 		 * @return 32 bit integer value
 		 */
 		private int readUInt32() {
-			final int byte1 = this.data[this.pos++];
-			final int byte2 = this.data[this.pos++];
-			final int byte3 = this.data[this.pos++];
-			final int byte4 = this.data[this.pos++];
-			return ((byte1 << 24) + (byte2 << 16) + (byte3 << 8) + (byte4 << 0));
+			return ((data[pos++] & 0xFF) << 24) | ((data[pos++] & 0xFF) << 16)
+					| ((data[pos++] & 0xFF) << 8) | (data[pos++] & 0xFF);
 		}
 
 		/**
