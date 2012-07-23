@@ -18,6 +18,8 @@ import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.ralli.sftpserver.filesystem.SimpleFileSystemFactory;
+
 public class Main {
 	private static final Logger log = LoggerFactory.getLogger(Main.class);
 
@@ -28,14 +30,14 @@ public class Main {
 			return true;
 		}
 	}
-	
+
 	public class SimplePasswordAuthenticator implements PasswordAuthenticator {
 		@Override
 		public boolean authenticate(String username, String password,
 				ServerSession session) {
 			return "hase".equals(password);
 		}
-		
+
 	}
 
 	private void run() throws Exception {
@@ -50,7 +52,8 @@ public class Main {
 		sshd.setPublickeyAuthenticator(new BogusPublickeyAuthenticator());
 		sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator());
 		sshd.setCommandFactory(new ScpCommandFactory());
-
+		sshd.setFileSystemFactory(new SimpleFileSystemFactory());
+		
 		List<NamedFactory<Command>> namedFactoryList = new ArrayList<NamedFactory<Command>>();
 		namedFactoryList.add(new SftpSubsystem.Factory());
 		sshd.setSubsystemFactories(namedFactoryList);
