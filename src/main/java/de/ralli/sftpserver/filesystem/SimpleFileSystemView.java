@@ -59,7 +59,7 @@ public class SimpleFileSystemView implements FileSystemView {
     }
 
     protected SshFile getFile(String dir, String file) {
-    	final String baseDir = "/c:/sftproot";
+    	final String baseDir = "/home/ralli/test/outgoing";
     	String myFile = StringUtils.removeStart(file, baseDir);
     	if(StringUtils.isEmpty(myFile))
     		myFile = "/";

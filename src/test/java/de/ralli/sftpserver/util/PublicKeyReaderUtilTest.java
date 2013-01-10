@@ -37,5 +37,6 @@ public class PublicKeyReaderUtilTest {
 		PublicKey publicKey = PublicKeyReaderUtil.load(key);
 		logger.info("public key: {}", publicKey);
 		logger.info("openssh: {}", PublicKeyReaderUtil.encodeToOpenSSH((RSAPublicKey) publicKey)); 
+		logger.info("fingerprint: {}", PublicKeyReaderUtil.getFingerPrintString(publicKey));
 	}
 }
