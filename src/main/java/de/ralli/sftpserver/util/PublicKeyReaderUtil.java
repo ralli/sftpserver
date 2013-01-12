@@ -80,48 +80,51 @@ public final class PublicKeyReaderUtil {
 	 */
 	private PublicKeyReaderUtil() {
 	}
-	
-	
 
-	public static String encodeToOpenSSH(RSAPublicKey key) throws Exception {
+	public static String encodeToOpenSSH(PublicKey key) throws Exception {
 		StringWriter stringWriter = new StringWriter();
-		stringWriter.write(SSH2_RSA_KEY);
-		stringWriter.append(' ');
-		stringWriter.write(Base64.encodeBase64String(encodePublicKey(key)));
+		if (key instanceof RSAPublicKey) {
+			stringWriter.write(SSH2_RSA_KEY);
+			stringWriter.append(' ');
+			stringWriter.write(Base64.encodeBase64String(encodePublicKey((RSAPublicKey) key)));
+		} else if (key instanceof DSAPublicKey) {
+			stringWriter.write(SSH2_DSA_KEY);
+			stringWriter.append(' ');
+			stringWriter.write(Base64.encodeBase64String(encodePublicKey((DSAPublicKey) key)));
+		}
 		return stringWriter.toString();
 	}
-	
+
 	public static String getFingerPrintString(PublicKey key) throws Exception {
 		byte[] bytes = getFingerPrint(key);
 		boolean first = true;
 		StringBuffer out = new StringBuffer();
-		for(byte b : bytes) {
-			if(!first) {
+		for (byte b : bytes) {
+			if (!first) {
 				out.append(':');
 			}
 			first = false;
-			out.append(String.format("%02x", b & 0xFF));			
+			out.append(String.format("%02x", b & 0xFF));
 		}
-		
-		return out.toString();		
+
+		return out.toString();
 	}
-	
+
 	private static byte[] getFingerPrint(PublicKey key) throws Exception {
 		byte[] bytes;
-		if(key instanceof RSAPublicKey) {
+		if (key instanceof RSAPublicKey) {
 			bytes = encodePublicKey((RSAPublicKey) key);
-		}
-		else if(key instanceof DSAPublicKey) {
-			bytes = encodePublicKey((RSAPublicKey) key);			
-		}
-		else {
-			throw new PublicKeyParseException(PublicKeyParseException.ErrorCode.UNKNOWN_PUBLIC_KEY_CLASS);
+		} else if (key instanceof DSAPublicKey) {
+			bytes = encodePublicKey((RSAPublicKey) key);
+		} else {
+			throw new PublicKeyParseException(
+					PublicKeyParseException.ErrorCode.UNKNOWN_PUBLIC_KEY_CLASS);
 		}
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		byte[] thedigest = md.digest(bytes);
 		return thedigest;
 	}
-	
+
 	private static byte[] encodePublicKey(RSAPublicKey key) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		/* encode the "ssh-rsa" string */
@@ -140,23 +143,23 @@ public final class PublicKeyReaderUtil {
 		out.write(data);
 		return out.toByteArray();
 	}
-	
+
 	private static byte[] encodePublicKey(DSAPublicKey key) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		
+
 		byte[] sshdsa = new byte[] { 0, 0, 0, 7, 's', 's', 'h', '-', 'd', 's',
 				'a' };
 		out.write(sshdsa);
 
-		DSAParams params = key.getParams();	
+		DSAParams params = key.getParams();
 		byte[] data = params.getP().toByteArray();
 		encodeUInt32(data.length, out);
 		out.write(data);
-		
+
 		data = params.getQ().toByteArray();
 		encodeUInt32(data.length, out);
 		out.write(data);
-		
+
 		data = params.getG().toByteArray();
 		encodeUInt32(data.length, out);
 		out.write(data);
@@ -166,9 +169,10 @@ public final class PublicKeyReaderUtil {
 		out.write(data);
 
 		return out.toByteArray();
-	} 
+	}
 
-	private static void encodeUInt32(int value, OutputStream out) throws IOException {
+	private static void encodeUInt32(int value, OutputStream out)
+			throws IOException {
 		byte[] tmp = new byte[4];
 		tmp[0] = (byte) ((value >>> 24) & 0xff);
 		tmp[1] = (byte) ((value >>> 16) & 0xff);
@@ -630,8 +634,9 @@ public final class PublicKeyReaderUtil {
 			 * @see PublicKeyReaderUtil.SSH2DataBuffer#readByteArray()
 			 */
 			CORRUPT_BYTE_ARRAY_ON_READ("Corrupt byte array on read"),
-			
-			UNKNOWN_PUBLIC_KEY_CLASS("Unknown public key class (only DSA and RSA supported)");
+
+			UNKNOWN_PUBLIC_KEY_CLASS(
+					"Unknown public key class (only DSA and RSA supported)");
 
 			/**
 			 * English message of the error code.
