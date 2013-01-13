@@ -1,5 +1,6 @@
 package de.ralli.sftpserver.util;
 
+import de.ralli.sftpserver.util.PublicKeyReaderUtil;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;

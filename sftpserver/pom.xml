@@ -4,88 +4,26 @@
     <groupId>de.ralli</groupId>
     <artifactId>sftpserver</artifactId>
     <parent>
-      <groupId>de.ralli</groupId>
-      <artifactId>sftp</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </parent>  
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <camel.version>2.9.2</camel.version>
-        <spring.version>3.1.1.RELEASE</spring.version>
-        <cglib.version>2.2.2</cglib.version>
-        <slf4j.version>1.6.4</slf4j.version>
-        <log4j.version>1.2.16</log4j.version>
-        <sshd.version>0.8.0</sshd.version>
-        <jsch.version>0.1.49</jsch.version>
-        <bouncycastle.version>1.46</bouncycastle.version>
-    </properties>
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+        <groupId>de.ralli</groupId>
+        <artifactId>sftp</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent> 
     <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sftpcore</artifactId>
+        </dependency>        
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-core</artifactId>
-            <version>${sshd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sshd</groupId>
-            <artifactId>sshd-pam</artifactId>
-            <version>${sshd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-            <version>${jsch.version}</version>
-        </dependency>
+        </dependency>     
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-ext-jdk15</artifactId>
-            <version>${bouncycastle.version}</version>
         </dependency>
-        <!-- test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- apache commons -->
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.6</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <!-- Logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
     </dependencies>
 </project>
