@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
-
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
