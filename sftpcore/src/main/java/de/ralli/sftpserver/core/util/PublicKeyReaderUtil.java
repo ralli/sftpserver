@@ -18,7 +18,7 @@
  * Last Changed By: $Author$
  */
 
-package de.ralli.sftpserver.util;
+package de.ralli.sftpserver.core.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
