@@ -1,22 +1,28 @@
 package de.ralli.sftpserver.core.util;
 
+import java.io.InputStream;
 import java.security.Key;
+import java.security.PublicKey;
 
 public interface KeySerializer {
 
-    public String getFingerprintString(Key key);
-    
-    public String getFingerprintString(byte[] keydata);
-    
-    byte[] getFingerprint(byte[] keydata);
+	public String getFingerprintString(Key key);
 
-    byte[] getFingerprint(Key key);
+	public String getFingerprintString(byte[] keydata);
 
-    String toOpenSSHString();
+	byte[] getFingerprint(byte[] keydata);
 
-    String toSecSSHString();
+	byte[] getFingerprint(Key key);
 
-    void writeAsOpenSSH(String fileName, Key key);
+	String toOpenSSHString();
 
-    void writeAsSecSSH(String fileName, Key key);
+	String toSecSSHString();
+
+	PublicKey loadPublicKey(InputStream in);
+
+	PublicKey loadPublicKey(final String _key);
+
+	void writeAsOpenSSH(String fileName, Key key);
+
+	void writeAsSecSSH(String fileName, Key key);
 }

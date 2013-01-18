@@ -7,9 +7,7 @@
         <groupId>de.ralli</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <groupId>de.ralli</groupId>
-    <artifactId>sftpcore</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>sftpcore</artifactId>    
     <name>sftpcore</name>
     <url>http://maven.apache.org</url>
     <dependencies>
