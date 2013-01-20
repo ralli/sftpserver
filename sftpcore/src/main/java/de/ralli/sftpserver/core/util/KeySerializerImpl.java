@@ -1,11 +1,14 @@
 package de.ralli.sftpserver.core.util;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.math.BigInteger;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.PublicKey;
@@ -20,40 +23,15 @@ import java.util.StringTokenizer;
 import org.apache.commons.codec.binary.Base64;
 
 public class KeySerializerImpl implements KeySerializer {
-
-	/**
-	 * Begin marker for the SECSH public key file format.
-	 * 
-	 * @see #extractSecSHBase64(String)
-	 */
 	private static final String BEGIN_PUB_KEY = "---- BEGIN SSH2 PUBLIC KEY ----";
-
-	/**
-	 * End marker for the SECSH public key file format.
-	 * 
-	 * @see #extractSecSHBase64(String)
-	 */
 	private static final String END_PUB_KEY = "---- END SSH2 PUBLIC KEY ----";
-
-	/**
-	 * Key name of the type of public key for DSA algorithm.
-	 * 
-	 * @see #loadPublicKey(String)
-	 */
 	private static final String SSH2_DSA_KEY = "ssh-dss";
-
-	/**
-	 * Key name of the type of public key for RSA algorithm.
-	 * 
-	 * @see #loadPublicKey(String)
-	 */
 	private static final String SSH2_RSA_KEY = "ssh-rsa";
-
 	private byte[] SSH_RSA = { 0, 0, 0, 7, 's', 's', 'h', '-', 'r', 's', 'a' };
-	private byte[] SSH_DSA = { 0, 0, 0, 7, 's', 's', 'h', '-', 'd', 's', 'a' };
+	private byte[] SSH_DSA = { 0, 0, 0, 7, 's', 's', 'h', '-', 'd', 's', 's' };
 
 	@Override
-	public String getFingerprintString(Key key) {
+	public String getFingerprintString(PublicKey key) {
 		byte[] bytes = getFingerprint(key);
 		return getFingerprintString(bytes);
 	}
@@ -84,7 +62,7 @@ public class KeySerializerImpl implements KeySerializer {
 	}
 
 	@Override
-	public byte[] getFingerprint(Key key) {
+	public byte[] getFingerprint(PublicKey key) {
 		String algorithm = key.getAlgorithm();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
@@ -103,13 +81,51 @@ public class KeySerializerImpl implements KeySerializer {
 	}
 
 	@Override
-	public String toOpenSSHString() {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public String toOpenSSHString(PublicKey key) {
+		StringBuilder buf = new StringBuilder();
+
+		if ("RSA".equals(key.getAlgorithm())) {
+			buf.append(SSH2_RSA_KEY);
+		} else if ("DSA".equals(key.getAlgorithm())) {
+			buf.append(SSH2_DSA_KEY);
+		}
+		buf.append(' ');
+		byte[] keyData = encodePublicKey(key);
+		String data = Base64.encodeBase64String(keyData);
+		buf.append(data);
+		return buf.toString();
 	}
 
 	@Override
-	public String toSecSSHString() {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public String toSecSSHString(PublicKey key) {
+		StringWriter stringWriter = new StringWriter();
+		BufferedWriter bufferedWriter = new BufferedWriter(stringWriter);
+		PrintWriter out = new PrintWriter(bufferedWriter);
+		out.print(BEGIN_PUB_KEY);
+		out.print('\n');
+		int test = 0;
+		try {
+			StringReader reader = new StringReader(
+					Base64.encodeBase64String(encodePublicKey(key)));
+			int ch;
+			while ((ch = reader.read()) >= 0) {
+				out.print((char) ch);
+				++test;
+				if (test == 64) {
+					out.print('\n');
+					test = 0;
+				}
+			}
+			if (test != 0) {
+				out.print('\n');
+			}
+			out.print(END_PUB_KEY);
+			out.print('\n');
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+		out.flush();
+		return stringWriter.toString();
 	}
 
 	public PublicKey loadPublicKey(final String _key)
@@ -134,7 +150,7 @@ public class KeySerializerImpl implements KeySerializer {
 		if (SSH2_DSA_KEY.equals(type)) {
 			ret = decodeDSAPublicKey(buf);
 		} else if (SSH2_RSA_KEY.equals(type)) {
-			ret = decodePublicKey(buf);
+			ret = decodeRSAPublicKey(buf);
 		} else {
 			throw new PublicKeyParseException(
 					PublicKeyErrorCode.UNKNOWN_PUBLIC_KEY_CERTIFICATE_FORMAT);
@@ -167,27 +183,44 @@ public class KeySerializerImpl implements KeySerializer {
 	}
 
 	@Override
-	public void writeAsOpenSSH(String fileName, Key key) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public void writeAsOpenSSH(OutputStream out, PublicKey key) {
+		String data = toOpenSSHString(key);
+		try {
+			out.write(data.getBytes("UTF-8"));
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 	@Override
-	public void writeAsSecSSH(String fileName, Key key) {
-		throw new UnsupportedOperationException("Not supported yet.");
+	public void writeAsSecSSH(OutputStream out, PublicKey key) {
+		String data = toSecSSHString(key);
+		try {
+			out.write(data.getBytes("UTF-8"));
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
-	private byte[] encodePublicKey(PublicKey key) throws Exception {
+	@Override
+	public byte[] encodePublicKey(PublicKey key) {
 		byte[] result = null;
 
-		if (key instanceof RSAPublicKey) {
-			result = encodeRSAPublicKey((RSAPublicKey) key);
-		} else if (key instanceof DSAPublicKey) {
-			result = encodeDSAPublicKey((DSAPublicKey) key);
-		} else {
+		try {
+			if (key instanceof RSAPublicKey) {
+				result = encodeRSAPublicKey((RSAPublicKey) key);
+			} else if (key instanceof DSAPublicKey) {
+				result = encodeDSAPublicKey((DSAPublicKey) key);
+			} else {
+				throw new PublicKeyParseException(
+						PublicKeyErrorCode.UNKNOWN_PUBLIC_KEY_CLASS);
+			}
+			return result;
+		} catch (IOException ex) {
 			throw new PublicKeyParseException(
 					PublicKeyErrorCode.UNKNOWN_PUBLIC_KEY_CLASS);
+
 		}
-		return result;
 	}
 
 	private byte[] encodeRSAPublicKey(RSAPublicKey key) throws IOException {
@@ -419,7 +452,7 @@ public class KeySerializerImpl implements KeySerializer {
 	 * @see <a href="http://tools.ietf.org/html/rfc4253#section-6.6">RFC 4253
 	 *      Section 6.6</a>
 	 */
-	private PublicKey decodePublicKey(final SSHByteArraySerializer _buffer)
+	private PublicKey decodeRSAPublicKey(final SSHByteArraySerializer _buffer)
 			throws PublicKeyParseException {
 		final BigInteger e = _buffer.readMPint();
 		final BigInteger n = _buffer.readMPint();
@@ -436,5 +469,4 @@ public class KeySerializerImpl implements KeySerializer {
 					ex);
 		}
 	}
-
 }
