@@ -18,6 +18,7 @@ import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.ralli.sftpserver.core.util.impl.KeySerializerImpl;
 import de.ralli.sftpserver.filesystem.SimpleFileSystemFactory;
 
 public class Main {
@@ -27,6 +28,8 @@ public class Main {
 
 		public boolean authenticate(String username, PublicKey key,
 				ServerSession session) {
+		    KeySerializerImpl keySerializer = new KeySerializerImpl();
+		    log.info("fingerprint: {}", keySerializer.getFingerprintString(key));
 			return true;
 		}
 	}

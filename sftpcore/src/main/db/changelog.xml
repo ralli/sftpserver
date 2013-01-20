@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+	<changeSet id="createTablePartner" author="ralli">
+		<createTable tableName="partner">
+			<column name="login" type="varchar(80)">
+				<constraints primaryKey="true" primaryKeyName="pk_partner"
+					nullable="false" />
+			</column>
+			<column name="host" type="varchar(80)">
+				<constraints nullable="false" />
+			</column>
+			<column name="port" type="integer">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		<modifySql dbms="mysql">
+			<append value=" engine innodb" />
+		</modifySql>
+	</changeSet>
+	<changeSet id="createTablePublicKey" author="ralli">
+		<createTable tableName="publickey">
+			<column name="fingerprint" type="varchar(47)">
+				<constraints primaryKey="true" primaryKeyName="pk_publickey"
+					nullable="false" />
+			</column>
+			<column name="keydata" type="clob">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		<modifySql dbms="mysql">
+			<append value=" engine innodb" />
+		</modifySql>
+	</changeSet>
+	<changeSet id="createTablePartnerKey" author="ralli">
+		<createTable tableName="partner_key">
+			<column name="login" type="varchar(80)">
+				<constraints nullable="false" />
+			</column>
+			<column name="fingerprint" type="varchar(47)">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		<modifySql dbms="mysql">
+			<append value=" engine innodb" />
+		</modifySql>
+	</changeSet>
+	<changeSet id="addPkToPartnerKey" author="ralli">
+		<addPrimaryKey tableName="partner_key" columnNames="login,fingerprint"
+			constraintName="pk_partner_key" />
+	</changeSet>
+	<changeSet id="addFkToPartnerKey" author="ralli">
+		<addForeignKeyConstraint constraintName="fk_partner_key_1"
+			referencedTableName="partner" baseColumnNames="login" baseTableName="partner_key"
+			referencedColumnNames="login" deleteCascade="true" />
+		<addForeignKeyConstraint constraintName="fk_partner_key_2"
+			referencedTableName="publickey" baseColumnNames="fingerprint"
+			baseTableName="partner_key" referencedColumnNames="fingerprint"
+			deleteCascade="true" />
+	</changeSet>
+</databaseChangeLog>

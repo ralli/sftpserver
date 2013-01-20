@@ -1,4 +1,4 @@
-package de.ralli.sftpserver.util;
+package de.ralli.sftpserver.core.util;
 
 import java.io.FileInputStream;
 import java.security.PublicKey;
@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.ralli.sftpserver.core.util.KeySerializerImpl;
+import de.ralli.sftpserver.core.util.impl.KeySerializerImpl;
 
 public class KeySerializerTest {
 	private static final String DSA_FINGERPRINT = "61:58:a7:12:63:d3:59:ec:6a:fa:5e:87:e7:31:26:29";

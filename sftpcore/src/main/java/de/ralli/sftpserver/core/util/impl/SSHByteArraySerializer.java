@@ -1,4 +1,4 @@
-package de.ralli.sftpserver.core.util;
+package de.ralli.sftpserver.core.util.impl;
 
 import java.math.BigInteger;
 

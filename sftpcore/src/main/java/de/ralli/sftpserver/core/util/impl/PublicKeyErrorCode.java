@@ -1,4 +1,4 @@
-package de.ralli.sftpserver.core.util;
+package de.ralli.sftpserver.core.util.impl;
 
 /**
  * Enumeration of the error codes if the public key could not parsed.

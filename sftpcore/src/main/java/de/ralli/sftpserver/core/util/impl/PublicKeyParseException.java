@@ -1,4 +1,4 @@
-package de.ralli.sftpserver.core.util;
+package de.ralli.sftpserver.core.util.impl;
 
 /**
  * The Exception is throws if the public key encoded text could not be parsed.
