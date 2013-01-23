@@ -55,7 +55,7 @@ public class Main {
 		sshd.setPublickeyAuthenticator(new BogusPublickeyAuthenticator());
 		sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator());
 		sshd.setCommandFactory(new ScpCommandFactory());
-		sshd.setFileSystemFactory(new SimpleFileSystemFactory());
+		sshd.setFileSystemFactory(new SimpleFileSystemFactory("/home/ralli/test"));
 		
 		List<NamedFactory<Command>> namedFactoryList = new ArrayList<NamedFactory<Command>>();
 		namedFactoryList.add(new SftpSubsystem.Factory());

@@ -12,71 +12,78 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleFileSystemView implements FileSystemView {
 
-	private final Logger LOG = LoggerFactory
-			.getLogger(SimpleFileSystemView.class);
+    private final Logger LOG = LoggerFactory.getLogger(SimpleFileSystemView.class);
 
-	// the first and the last character will always be '/'
-	// It is always with respect to the root directory.
-	private String currDir;
+    // the first and the last character will always be '/'
+    // It is always with respect to the root directory.
+    private String currDir;
 
-	private String userName;
+    private String userName;
 
-	private boolean caseInsensitive = false;
+    private boolean caseInsensitive = false;
 
-	private static final String BASE_DIR = "/home/ralli/test/outgoing";
+    /**
+     * The base directory.
+     * 
+     * All Users will have their root directory relative to that path
+     */
+    private String baseDir;
 
-	/**
-	 * Constructor - internal do not use directly, use
-	 * {@link NativeFileSystemFactory} instead
-	 */
-	protected SimpleFileSystemView(String userName) {
-		this(userName, false);
-	}
+    /**
+     * Constructor - internal do not use directly, use
+     * {@link NativeFileSystemFactory} instead
+     */
+    protected SimpleFileSystemView(String userName, String baseDir) {
+        this(userName, baseDir, false);
+    }
 
-	/**
-	 * Constructor - internal do not use directly, use
-	 * {@link NativeFileSystemFactory} instead
-	 */
-	public SimpleFileSystemView(String userName, boolean caseInsensitive) {
-		if (userName == null) {
-			throw new IllegalArgumentException("user can not be null");
-		}
+    /**
+     * Constructor - internal do not use directly, use
+     * {@link NativeFileSystemFactory} instead
+     */
+    public SimpleFileSystemView(String userName, String baseDir, boolean caseInsensitive) {
+        if (userName == null) {
+            throw new IllegalArgumentException("user can not be null");
+        }
 
-		this.caseInsensitive = caseInsensitive;
+        this.baseDir = baseDir;
+        this.caseInsensitive = caseInsensitive;
 
-		currDir = BASE_DIR;
-		this.userName = userName;
+        currDir = baseDir;
+        this.userName = userName;
 
-		// add last '/' if necessary
-		LOG.debug(
-				"Simple filesystem view created for user \"{}\" with root \"{}\"",
-				userName, currDir);
-	}
+        // add last '/' if necessary
+        LOG.debug("Simple filesystem view created for user \"{}\" with root \"{}\"", userName, currDir);
+    }
 
-	/**
-	 * Get file object.
-	 */
-	public SshFile getFile(String file) {
-		return getFile(currDir, file);
-	}
+    public String getBaseDir() {
+        return baseDir;
+    }
 
-	public SshFile getFile(SshFile baseDir, String file) {
-		return getFile(baseDir.getAbsolutePath(), file);
-	}
+    public void setBaseDir(String baseDir) {
+        this.baseDir = baseDir;
+    }
 
-	protected SshFile getFile(String dir, String file) {
+    /**
+     * Get file object.
+     */
+    public SshFile getFile(String file) {
+        return getFile(currDir, file);
+    }
 
-		String myDir = StringUtils.removeStart(dir, BASE_DIR);
-		// if(StringUtils.isEmpty(myFile))
-		// myFile = "/";
-		// get actual file object
-		String physicalName = NativeSshFile.getPhysicalName(BASE_DIR, myDir,
-				file, caseInsensitive);
-		File fileObj = new File(physicalName);
+    public SshFile getFile(SshFile baseDir, String file) {
+        return getFile(baseDir.getAbsolutePath(), file);
+    }
 
-		// strip the root directory and return
-		String userFileName = NativeSshFile.getPhysicalName("/", myDir, file,
-				caseInsensitive);
-		return new SimpleSshFile(userFileName, fileObj, userName);
-	}
+    protected SshFile getFile(String dir, String file) {
+        String physicalDirName = NativeSshFile.getPhysicalName("/",
+                dir, ".", caseInsensitive);
+        String myDir = StringUtils.removeStart(physicalDirName, baseDir);
+        String physicalName = NativeSshFile.getPhysicalName(baseDir, myDir, file, caseInsensitive);
+        File fileObj = new File(physicalName);
+
+        // strip the root directory and return
+        String userFileName = NativeSshFile.getPhysicalName("/", myDir, file, caseInsensitive);
+        return new SimpleSshFile(userFileName, fileObj, userName);
+    }
 }
